@@ -1,35 +1,68 @@
 package net.vortex.springrestapi.api.controller;
 
 import net.vortex.springrestapi.domain.model.Client;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import net.vortex.springrestapi.domain.repository.ClientRepository;
+import net.vortex.springrestapi.domain.service.ClientRegisterService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
+@RequestMapping("/clients")
 public class ClientController {
 
-    @GetMapping("/clients")
-    public List<Client> list(){
-        var client1 = new Client();
-        client1.setId(1L);
-        client1.setName("Zé");
-        client1.setEmail("ze@ze.ze");
-        client1.setPhone("+55 11 98765-4321");
+    @Autowired
+    private ClientRepository clientRepository;
 
-        var client2 = new Client();
-        client2.setId(2L);
-        client2.setName("Jão");
-        client2.setEmail("jao@jao.jao");
-        client2.setPhone("+55 11 98765-4321");
+    @Autowired
+    private ClientRegisterService clientRegisterService;
 
-        var client3 = new Client();
-        client3.setId(3L);
-        client3.setName("Maria");
-        client3.setEmail("maria@maria.mar");
-        client3.setPhone("+55 11 98765-4321");
+    @GetMapping
+    public List<Client> list() {
+        return clientRepository.findAll();
+    }
 
-        return Arrays.asList(client1, client2, client3);
+    @GetMapping("/{clientId}")
+    public ResponseEntity<Client> search(@PathVariable Long clientId) {
+        Optional<Client> client = clientRepository.findById(clientId);
+
+        if (client.isPresent()) {
+            return ResponseEntity.ok(client.get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Client add(@Valid @RequestBody Client client) {
+        return clientRegisterService.save(client);
+    }
+
+    @PutMapping("/{clientId}")
+    public ResponseEntity<Client> update(@PathVariable Long clientId, @Valid @RequestBody Client client) {
+        if (!clientRepository.existsById(clientId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        client.setId(clientId);
+        client = clientRegisterService.save(client);
+
+        return ResponseEntity.ok(client);
+    }
+
+    @DeleteMapping("/{clientId}")
+    public ResponseEntity<Void> delete(@PathVariable Long clientId) {
+        if (!clientRepository.existsById(clientId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        clientRegisterService.deleteById(clientId);
+
+        return ResponseEntity.noContent().build();
     }
 }

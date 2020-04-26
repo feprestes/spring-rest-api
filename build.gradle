@@ -21,6 +21,9 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.flywaydb:flyway-core'
+	runtimeOnly 'mysql:mysql-connector-java'
 	// This is enabled when XML support is needed
 //	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
