@@ -1,16 +1,13 @@
 package net.vortex.springrestapi.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import net.vortex.springrestapi.domain.ValidationGroups;
+import net.vortex.springrestapi.api.model.Comment;
+import net.vortex.springrestapi.domain.exception.BusinessException;
 
 import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.groups.ConvertGroup;
-import javax.validation.groups.Default;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -20,27 +17,20 @@ public class ServiceOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Valid
-    @ConvertGroup(from = Default.class, to = ValidationGroups.ClientId.class)
-    @NotNull
     @ManyToOne
     private Client client;
 
-    @NotBlank
     private String description;
-
-    @NotNull
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private ServiceOrderStatus status;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private OffsetDateTime creationDate;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private OffsetDateTime finishDate;
+
+    @OneToMany(mappedBy = "serviceOrder")
+    private List<Comment> comments = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -98,6 +88,14 @@ public class ServiceOrder {
         this.finishDate = finishDate;
     }
 
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -109,5 +107,22 @@ public class ServiceOrder {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public boolean cabBeFinished() {
+        return ServiceOrderStatus.OPEN.equals(getStatus());
+    }
+
+    public boolean cannotBeFinished() {
+        return !cabBeFinished();
+    }
+
+    public void finish() {
+        if (cannotBeFinished()) {
+            throw new BusinessException("Service Order cannot be finished");
+        }
+
+        setStatus(ServiceOrderStatus.FINISHED);
+        setFinishDate(OffsetDateTime.now());
     }
 }

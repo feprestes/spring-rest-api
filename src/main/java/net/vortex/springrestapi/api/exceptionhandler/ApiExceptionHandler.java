@@ -1,6 +1,7 @@
 package net.vortex.springrestapi.api.exceptionhandler;
 
 import net.vortex.springrestapi.domain.exception.BusinessException;
+import net.vortex.springrestapi.domain.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -23,6 +24,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Autowired
     private MessageSource messageSource;
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    private ResponseEntity<Object> handleEntityNotFoundException(BusinessException ex, WebRequest request) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        Problem problem = new Problem();
+        problem.setStatus(status.value());
+        problem.setTitle(ex.getMessage());
+        problem.setDateTime(OffsetDateTime.now());
+
+        return handleExceptionInternal(ex, problem, new HttpHeaders(), status, request);
+    }
 
     @ExceptionHandler(BusinessException.class)
     private ResponseEntity<Object> handleBusiness(BusinessException ex, WebRequest request) {

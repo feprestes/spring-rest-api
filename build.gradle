@@ -24,6 +24,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.flywaydb:flyway-core'
 	runtimeOnly 'mysql:mysql-connector-java'
+	implementation 'org.modelmapper:modelmapper:2.3.0'
 	// This is enabled when XML support is needed
 //	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
